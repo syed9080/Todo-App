@@ -1,4 +1,4 @@
-import React ,{useState}from 'react';
+import React ,{useState,useEffect}from 'react';
 import TodoForm from './TodoForm';
 import {v4 as uuidv4} from 'uuid';
 import Todo from './Todo';
@@ -8,10 +8,32 @@ uuidv4();
 
 export const TodoWrapper = () => {
 
-  const[todos,setTodos] = useState([])
+  const [todos, setTodos] = useState(() => {
+    try {
+      // Retrieve items from local storage
+      const storedItems = localStorage.getItem('items');
+
+      // Check if items exist in local storage
+      if (storedItems) {
+        // Parse and return the retrieved items as the initial state for 'todos'
+        return JSON.parse(storedItems);
+      }
+    } catch (error) {
+      console.error('Error retrieving data from local storage:', error);
+    }
+
+    // Default state if there's an error or no data in local storage
+    return [];
+  });
+  useEffect(() => {
+    localStorage.setItem('items', JSON.stringify(todos));
+  }, [todos]);
+
+  
 
   const addTodo = (todo) =>{
     setTodos([...todos,{id: uuidv4(), task:todo, completed:false, isEditing:false}])
+   
     console.log(todos)
   }
   const toggleComplete =(id)=>{
@@ -21,7 +43,7 @@ export const TodoWrapper = () => {
   }
   const deleteTodo =(id)=>{
     setTodos(todos.filter(todo =>todo.id !== id))
-  }
+  } 
   const editTodo =(id)=>{
 
     setTodos(todos.map(todo =>todo.id === id?{...todo,isEditing:!todo.isEditing}:todo))
@@ -53,3 +75,5 @@ export const TodoWrapper = () => {
     </div>
   );
 };
+
+
